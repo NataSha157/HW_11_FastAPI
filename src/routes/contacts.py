@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Path, Query
+from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.db import get_db
@@ -43,14 +44,27 @@ async def delete_contact(contact_id: int = Path(ge=1), db: AsyncSession = Depend
     return contact
 
 
-@router.get("/firstname", response_model=list[ContactResponse])
-async def get_firstname_contacts(firstname: str, limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+@router.get("/firstname/{firstname}", response_model=list[ContactResponse])
+async def get_firstname_contacts(firstname: str = Path(), limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                                  db: AsyncSession = Depends(get_db)):
     firstname_contacts = await repositories_contacts.get_firstname_contacts(firstname, limit, offset, db)
     return firstname_contacts
 
+@router.get("/lastname/{lastname}", response_model=list[ContactResponse])
+async def get_lastname_contacts(lastname: str = Path(), limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+                                 db: AsyncSession = Depends(get_db)):
+    lastname_contacts = await repositories_contacts.get_lastname_contacts(lastname, limit, offset, db)
+    return lastname_contacts
 
-@router.get("/birthdays", response_model=list[ContactResponse])
+@router.get("/email/{e_mail}", response_model=list[ContactResponse])
+async def get_email_contacts(e_mail: EmailStr, limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
+                                 db: AsyncSession = Depends(get_db)):
+    email_contacts = await repositories_contacts.get_email_contacts(e_mail, limit, offset, db)
+    return email_contacts
+
+
+
+@router.get("/birthdays/", response_model=list[ContactResponse])
 async def get_birthdays_per_week(limit: int = Query(10, ge=10, le=500), offset: int = Query(0, ge=0),
                                  db: AsyncSession = Depends(get_db)):
     contacts = await repositories_contacts.get_birthdays_per_week(limit, offset, db)

@@ -1,6 +1,6 @@
 from datetime import timedelta, date
 
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.entity.models import Contact
@@ -58,12 +58,34 @@ async def get_firstname_contacts(firstname: str, limit: int, offset: int, db: As
     return contacts_firstname.scalars().all()
 
 
+async def get_lastname_contacts(lastname: str, limit: int, offset: int, db: AsyncSession):
+    stmt = select(Contact).filter(Contact.lastname == lastname).offset(offset).limit(limit)
+    contacts_lastname = await db.execute(stmt)
+    return contacts_lastname.scalars().all()
+
+
+async def get_email_contacts(e_mail: str, limit: int, offset: int, db: AsyncSession):
+    stmt = select(Contact).filter(Contact.e_mail == e_mail).offset(offset).limit(limit)
+    contacts_email = await db.execute(stmt)
+    return contacts_email.scalars().all()
+
+
 async def get_birthdays_per_week(limit: int, offset: int, db: AsyncSession):
     date_today = date.today()
     date_delta = timedelta(days=6)
     date_end = date_today + date_delta
+    now_month = date_today.month
+    now_day = date_today.day
+    end_month = date_end.month
+    end_day = date_end.day
 
-    stmt = select(Contact).filter(Contact.birthday >= date_today).filter(Contact.birthday <= date_end).offset(
-        offset).limit(limit)
+    stmt = select(Contact).offset(offset).limit(limit)
     contacts = await db.execute(stmt)
-    return contacts.scalars().all()
+    res = contacts.scalars().all()
+
+    get_res = []
+    for i in res:
+        if i.birthday.month >= now_month and i.birthday.month <= end_month and i.birthday.day >= now_day and i.birthday.day <= end_day:
+            get_res.append(i)
+
+    return get_res
