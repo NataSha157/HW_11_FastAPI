@@ -23,7 +23,7 @@
       try {
         await window.create_contact(this.newContact);
         this.newContact = { firstname: '', lastname: '', e_mail: '', birthday: '', add_data: '' };
-        await this.get_contact();
+        await this.get_contacts();
       } catch (err) {
         this.error = err.message;
       }
@@ -32,7 +32,7 @@
       try {
         await window.update_contact(contact);
         contact.editing = false;
-        await this.get_contact();
+        await this.get_contacts();
       } catch (err) {
         this.error = err.message;
       }
@@ -40,7 +40,8 @@
     async delete_contact(id) {
       try {
         await window.delete_contact(id);
-        this.contact = this.contact.filter(contact => contact.id !== id);
+        await this.get_contacts();
+<!--        this.contact = this.contact.filter(contact => contact.id !== id);-->
       } catch (err) {
         this.error = err.message;
       }
